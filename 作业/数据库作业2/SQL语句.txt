@@ -1,0 +1,28 @@
+一、
+1.
+select count(i_id), avg(i_price), max(i_price), min(i_price), var_pop(i_price) from bmsql_item;
+2.
+select s_w_id as w_id, avg(s_quantity) as avg from bmsql_stock group by s_w_id;
+二、
+1.
+select * from bmsql_item where i_name like 'NB_%' or i_name like '_%VT';
+2.
+select count(i_id), avg(i_price) from bmsql_item where i_name >= 'h_%' and i_name <= 'm_%';
+三、
+1.
+select * from bmsql_item where i_id in (select i_id from bmsql_item where i_name like 'NB_%' or i_name like '_%VT') and i_id in (select s_i_id from bmsql_stock group by s_w_id,s_i_id having s_quantity >10);
+2.
+select * from bmsql_item where i_id in (select s_i_id from bmsql_stock where s_quantity > 95 and s_w_id = any (select w_id from bmsql_warehouse where w_tax > 0.16) group by s_i_id);
+四、
+1.
+select * from bmsql_item where 95 < any(select s_quantity from bmsql_stock where s_i_id = i_id and s_w_id in (select w_id from bmsql_warehouse where w_tax > 0.18));
+2.
+select * from bmsql_warehouse where w_id in(select distinct s_w_id from bmsql_stock where s_i_id in (select i_id from bmsql_item where i_name like 'SP_%') and s_quantity > 95);
+五、
+1.
+select * from bmsql_item where i_id in (select s_i_id from (select s_i_id, avg(s_quantity) as avg from bmsql_stock where s_i_id in (select i_id from bmsql_item where i_name like 'SP_%')  group by s_i_id) as A where avg > 50);
+2.
+select w_id from bmsql_warehouse where 0.15 > all(select d_tax from bmsql_district where d_w_id = w_id);
+3.
+create table A as select s_i_id, s_w_id from bmsql_stock where s_quantity > 95 and s_w_id in (select w_id from bmsql_warehouse where 0.15 > all(select d_tax from bmsql_district where d_w_id = w_id)); 
+select s_w_id as w_id, count(s_i_id) as number, avg(i_price) as avg_price from bmsql_item, A where s_i_id = i_id group by w_id;

@@ -1,0 +1,97 @@
+1.
+create or replace function get_student_phone() returns character varying
+as $$
+declare
+result varchar(50);
+num integer;
+begin
+select array_to_string(array(select chr((48 + round(random() * 9)) :: integer) from generate_series(1,8)), '') into result;
+num = random() * 1;
+if num = 1 then
+result = '137' || result;
+else
+result = '159' || result;
+end if;
+return result;
+end;
+$$
+language plpgsql;
+
+2.
+create or replace function get_student_date() returns character varying
+as $$
+declare
+result varchar(100);
+month integer;
+year integer;
+day integer;
+num integer;
+begin
+num = random() * 9;
+if num >= 6 then
+year = 2021;
+result = '2021-';
+else
+year = 2020;
+result = '2020-';
+end if;
+
+month = random() * 12 + 1;
+if month < 10 then
+result = result || '0' || cast(month as varchar) || '-';
+else
+result = result || cast(month as varchar) || '-';
+end if;
+
+if month = 1 or month = 3 or month = 5 or month = 7 or month = 8 or month = 10 or month = 12 then
+day = random() * 31 + 1;
+end if;
+if month = 4 or month = 6 or month = 9 or month = 11 then
+day = random() * 30 + 1;
+end if;
+if month = 2 and year = 2020 then
+day = random() * 29 + 1;
+end if;
+if month = 2 and year = 2021 then
+day = random() * 28 + 1;
+end if;
+
+if day < 10 then
+result = result || '0' || cast(day as varchar) ;
+else
+result = result || cast(day as varchar);
+end if;
+
+return result;
+end;
+$$
+language plpgsql;
+
+3.
+create or replace function create_student_table() 
+returns table(student_id integer, phone_num varchar, enrollment_date varchar)
+as $$
+declare
+num integer := 1;
+begin
+drop table if exists student;
+create table student(student_id integer, phone_num varchar, enrollment_date varchar);
+while num <=  15 loop
+insert into student(student_id, phone_num, enrollment_date)
+values(num,get_student_phone(),get_student_date());
+num = num + 1;
+end loop;
+return query select * from student;
+end;
+$$
+language plpgsql;
+
+4.
+create or replace function select_student_by_date() 
+returns table(student integer,phone varchar)
+as $$
+begin
+return query select student_id, phone_num from student where enrollment_date >= '2020-07-01';
+end;
+$$
+language plpgsql;

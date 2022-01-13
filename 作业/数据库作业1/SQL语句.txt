@@ -1,0 +1,32 @@
+1.找出销售税小于0.15的销售区域，显示这些销售区域的名字（不输出重复的名字）
+
+select distinct d_name
+from bmsql_district
+where d_tax < 0.15;
+
+2.找出给state HS（销售区域）供货的仓库都来自哪个state和city
+
+select D.d_state, W.w_state, W.w_city 
+from bmsql_district D,bmsql_warehouse W 
+where D.d_state = 'HS' and D.d_w_id = W.w_id;
+
+3.找出在某个仓库中货物数量少于18而且价格为80的货物和对应的仓库，
+   输出这些货物的ID、对应仓库的ID和货物的剩余数量
+
+select I.i_id, S.s_w_id, S.s_quantity 
+from bmsql_stock S, bmsql_item I 
+where S.s_i_id = I.i_id and I.i_price = 80 and S.s_quantity < 18;
+
+4.找出满足以下要求的仓库的ID和名字（不输出重复的ID和名字）：有来自福建省
+（state为FJ）且享有八折优惠的顾客购买过该仓库的商品
+
+select distinct w_id,w_name
+from bmsql_warehouse,bmsql_customer
+where w_id = c_w_id and c_state = 'FJ' and c_discount = 0.2;
+
+5.找出享有七折优惠而且信用良好，同时在state UV或HS（销售区域）有购买商品的顾客，
+   显示他们的姓名（包括中间名）
+
+select distinct c_first , c_middle , c_last
+from bmsql_customer,bmsql_district
+where c_d_id = d_id and c_discount = 0.3 and c_credit = 'GC' and (d_state = 'UV' or d_state = 'HS');
